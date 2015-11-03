@@ -1,5 +1,5 @@
- globals [ gl_my-car gl_cars-count gl_accelerator gl_decelerator gl_speed-max gl_speed-min
- gl_speed-maxcircle gl_distance-straight gl_distance-left gl_distance-right gl_degree-per-foot
+ globals [ mi_carro contador_carros aceleracion desaceleracion velocidad_maxima velocidad_minima
+ velocidad_max_circulo distancia_directo distancia_izquierda distancia_derecha gl_degree-per-foot
  gl_side gl_slowdown gl_straightdistance gl_distanceto00 gl_minseparation gl_reactiontime]
 
 breed [cars car]
@@ -7,19 +7,19 @@ turtles-own [ speed droundabout ]
 
 to setup
  clear-all
- set gl_cars-count 0
- ; 100 ticks per second
- set gl_accelerator 0.001 ; 10 ft per second per second
- set gl_decelerator 0.001 ; 10 ft per second per second
- set gl_speed-max 0.5133333333333 ; 35mph, 51.3333 ft per second
- set gl_speed-min 1.e-9 ; to prevent divided by 0
- set gl_speed-maxcircle gl_speed-max * 0.5 ; half normal speed
- set gl_distance-straight 34.77
- set gl_distance-left 58.34
- set gl_distance-right 11.22
+ set contador_carros 0
+ ;100 ticks per second
+ set aceleracion 0.001 ; 10 ft per second per second
+ set desaceleracion 0.001 ; 10 ft per second per second
+ set velocidad_maxima 0.5133333333333 ; 35mph, 51.3333 ft per second
+ set velocidad_minima 1.e-9 ; to prevent divided by 0
+ set velocidad_max_circulo velocidad_maxima * 0.5 ; half normal speed
+ set distancia_directo 34.77
+ set distancia_izquierda 58.34
+ set distancia_derecha 11.22
  set gl_degree-per-foot 3.81972
  set gl_side sqrt (15 ^ 2 - 6 ^ 2)
- set gl_slowdown (gl_speed-max ^ 2 - gl_speed-maxcircle ^ 2) / (2 * (gl_decelerator))
+ set gl_slowdown (velocidad_maxima ^ 2 - velocidad_max_circulo ^ 2) / (2 * (desaceleracion))
  set gl_straightdistance gl_slowdown + gl_side
  set gl_distanceto00 sqrt (gl_straightdistance ^ 2 + 6 ^ 2)
  set gl_minseparation 15; assume car lenght 10' & distance between cars 5'
@@ -29,15 +29,15 @@ to setup
    set color (random 3 * 40 + 15) ; 15=red=go right, 55=green=go straight, 95=sky=go left
    set shape "car"
    set size 5
-   set speed gl_speed-max - random-float .1
-   ifelse (color = sky ) [set droundabout ( gl_distance-left)] [
-     ifelse (color = green ) [set droundabout ( gl_distance-straight)] [set droundabout gl_distance-right]
+   set speed velocidad_maxima - random-float .1
+   ifelse (color = sky ) [set droundabout ( distancia_izquierda)] [
+     ifelse (color = green ) [set droundabout ( distancia_directo)] [set droundabout distancia_derecha]
    ]
    distribute-cars
  ]
 
- set gl_my-car one-of cars
- watch gl_my-car
+ set mi_carro one-of cars
+ watch mi_carro
  ask patches [
    if (pxcor ^ 2 + pycor ^ 2 < 20 ^ 2) and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2) [
      set pcolor grey
@@ -63,7 +63,6 @@ end
 to go
  ask cars [goall]
  tick
- if ticks > 100000 [stop]
 end
 
 to goall
@@ -73,14 +72,14 @@ to goall
  ] [
    gomainroad
  ]
- ;plot [speed] of gl_my-car * 360000 / 5280 ; convert from feet per tick to mph
+ ;plot [speed] of mi_carro * 360000 / 5280 ; convert from feet per tick to mph
 end
 
 to goroundabout
  let myhd heading
- if ((color = sky and droundabout = ( gl_distance-left) ) or (color = green and droundabout = ( gl_distance-straight )) or (color = red and droundabout = ( gl_distance-right ))) [
+ if ((color = sky and droundabout = ( distancia_izquierda) ) or (color = green and droundabout = ( distancia_directo )) or (color = red and droundabout = ( distancia_derecha ))) [
    ; begin roundabout
-   set gl_cars-count gl_cars-count + 1
+   set contador_carros contador_carros + 1
    set droundabout droundabout - 0.00001 ; start roundabout
    rt 66.422
  ]
@@ -92,24 +91,24 @@ to goroundabout
    ifelse any? cars-ahead [
      let car-nearest (min-one-of cars-ahead [distance myself])
      ifelse (subtract-headings [heading] of car-nearest myhd > -52.296 and speed > [speed] of car-nearest) [; 52.296 degrees = 15 ft
-       set speed [speed] of car-nearest - gl_decelerator
+       set speed [speed] of car-nearest - desaceleracion
      ] [; car closer than 15 ft
-     set speed speed - gl_decelerator
+     set speed speed - desaceleracion
      ] ; car farther than 15 ft
    ] [
-     set speed speed + gl_accelerator ; no cars ahead so accelerate
+     set speed speed + aceleracion ; no cars ahead so accelerate
    ]
 
    if droundabout < 15 [; ready to exit roundabout and have to watch for cars on main road
      let cars-onmainroad-nearby other cars with [distancexy 0 0 > 15 and (distance myself) < 15 and subtract-headings heading myhd > 0]
      if any? cars-onmainroad-nearby [
        let car-onmainroad-nearest (min-one-of cars-onmainroad-nearby [distance myself])
-       set speed [speed] of car-onmainroad-nearest - gl_decelerator
+       set speed [speed] of car-onmainroad-nearest - desaceleracion
      ]
    ]
 
-   if speed < gl_speed-min [set speed gl_speed-min]
-   if speed > gl_speed-maxcircle [set speed gl_speed-maxcircle]
+   if speed < velocidad_minima [set speed velocidad_minima]
+   if speed > velocidad_max_circulo [set speed velocidad_max_circulo]
    fd speed
    lt speed * gl_degree-per-foot
    set droundabout droundabout - speed
@@ -119,12 +118,12 @@ to goroundabout
    rt 66.422
    fd speed
    ifelse (color = sky ) [
-     set droundabout ( gl_distance-left)
+     set droundabout ( distancia_izquierda)
    ] [
      ifelse (color = green )[
-       set droundabout ( gl_distance-straight)
+       set droundabout ( distancia_directo)
      ] [
-       set droundabout ( gl_distance-right) ; red, turn right
+       set droundabout ( distancia_derecha) ; red, turn right
      ]
    ]
    readjustcordinate
@@ -146,20 +145,20 @@ to gomainroad
         let vofcar-nearest [speed] of car-nearest
         ifelse dtocar-nearest < dseparation [
           if speed >= vofcar-nearest [
-            set speed speed - gl_decelerator
+            set speed speed - desaceleracion
           ]
           if dtocar-nearest < gl_minseparation [
-            set speed speed - gl_decelerator
-            if speed >= vofcar-nearest [ set speed vofcar-nearest - gl_decelerator ]
+            set speed speed - desaceleracion
+            if speed >= vofcar-nearest [ set speed vofcar-nearest - desaceleracion ]
           ]
         ] [
-          set speed speed + gl_accelerator ; end car-nearest
+          set speed speed + aceleracion ; end car-nearest
         ]
       ] [
-        set speed speed + gl_accelerator ; end cars-ahead
+        set speed speed + aceleracion ; end cars-ahead
       ]
     ] [
-      set speed speed + gl_accelerator ; end cars-same-direction
+      set speed speed + aceleracion ; end cars-same-direction
     ]
   ] ; end distancexy 0 0
 
@@ -167,16 +166,16 @@ to gomainroad
     let myhdatcircle myhd + 66.422
     let dtocircle dfromcenter - 15
     let dtostop dfromcenter - 25
-    let t (2 * dtocircle / (speed + gl_speed-maxcircle)) ; t is the time to circle
+    let t (2 * dtocircle / (speed + velocidad_max_circulo)) ; t is the time to circle
     let cars-inroundabout cars with [(distancexy 0 0) <= 15]
     let cars-ininterval cars-inroundabout with [(t * speed < droundabout ) or
-      (t * (speed + gl_speed-maxcircle) / 2 < droundabout)]
+      (t * (speed + velocidad_max_circulo) / 2 < droundabout)]
     let cars-inrange cars-ininterval with [
       ((subtract-headings (heading + (t * speed) * 3.82) myhdatcircle) < 52.296 and
       (subtract-headings (heading + (t * speed) * 3.82) myhdatcircle) > -52.296)
       or
-      ((subtract-headings (heading + (t * (speed + gl_speed-maxcircle) / 2) * 3.82) myhdatcircle) < 52.296 and
-      (subtract-headings (heading +(t * (speed + gl_speed-maxcircle) / 2) * 3.82) myhdatcircle) > -52.296)
+      ((subtract-headings (heading + (t * (speed + velocidad_max_circulo) / 2) * 3.82) myhdatcircle) < 52.296 and
+      (subtract-headings (heading +(t * (speed + velocidad_max_circulo) / 2) * 3.82) myhdatcircle) > -52.296)
     ]
     if any? cars-inrange or count cars with [(distancexy 0 0) <= 25] > 3 [
       let deceleration-to-stop (speed ^ 2 / (2 * dtostop))
@@ -184,8 +183,8 @@ to gomainroad
     ]
   ]
 
-  if speed > gl_speed-max [ set speed gl_speed-max ]
-  if speed < gl_speed-min [ set speed gl_speed-min ]
+  if speed > velocidad_maxima [ set speed velocidad_maxima ]
+  if speed < velocidad_minima [ set speed velocidad_minima ]
   forward speed
 end
 
@@ -211,11 +210,11 @@ end
 GRAPHICS-WINDOW
 210
 10
-653
-474
+931
+752
 100
 100
-2.15423
+3.54
 1
 10
 1
@@ -229,8 +228,8 @@ GRAPHICS-WINDOW
 100
 -100
 100
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -612,7 +611,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2.0
+NetLogo 5.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
