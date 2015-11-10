@@ -44,11 +44,32 @@ to setup
     [
       set pcolor grey
     ]
-    if abs (pxcor) > 1 and abs (pxcor) < 11 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+
+      if abs (pxcor) > 10 and abs (pxcor) < 20 and (pxcor ^ 2 + pycor ^ 2 > 20 ^ 2)
     [
       set pcolor grey
     ]
-    if abs (pycor) > 1 and abs (pycor) < 11 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+
+    if abs (pxcor) > 1 and abs (pxcor) < 11 and (pxcor ^ 2 + pycor ^ 2 > 30 ^ 2)
+    [
+      set pcolor white
+    ]
+
+    if abs (pxcor) > 1 and abs (pxcor) < 10 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+    [
+      set pcolor grey
+    ]
+
+    if abs (pycor) > 1 and abs (pycor) < 20 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+    [
+      set pcolor grey
+    ]
+
+     if abs (pycor) > 1 and abs (pycor) < 10 and (pxcor ^ 2 + pycor ^ 2 > 30 ^ 2)
+    [
+      set pcolor white
+    ]
+     if abs (pycor) > 1 and abs (pycor) < 9 and (pxcor ^ 2 + pycor ^ 2 > 30 ^ 2)
     [
       set pcolor grey
     ]
@@ -72,12 +93,14 @@ to distribuir-carros  ;; procedure
   set heading random 4 * 90
   if (heading = 0)
     [setxy 6 (38 + random (max-pycor - 38)) * (2 * random 2 - 1)]
+
   if (heading = 90)
     [setxy ((38 + random (max-pxcor - 38)) * (2 * random 2 - 1)) -6]
   if (heading = 180)
     [setxy -6 ((38 + random (max-pycor - 38)) * (2 * random 2 - 1))]
   if (heading = 270)
     [setxy ((38 + random (max-pxcor - 38)) * (2 * random 2 - 1)) 6]
+
   if any? other turtles-here
     [ distribuir-carros ]
 end
@@ -450,7 +473,7 @@ Aceleracion
 Aceleracion
 0
 0.002
-0.001
+0.0010
 0.0001
 1
 NIL
