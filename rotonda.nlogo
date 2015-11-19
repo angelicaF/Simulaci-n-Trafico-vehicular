@@ -1,6 +1,6 @@
 ;Built in NetLogo 5.2.1
 
-globals [ CarroEnf CarrosTransitados Desaceleracion VelocidadMin VelocidadMaxAdentro VelocidadMaxAfuera DistanciaRotDirecto
+globals [ CarroEnf CarrosTransitados Desaceleracion VelocidadMax VelocidadMin VelocidadMaxAdentro VelocidadMaxAfuera DistanciaRotDirecto
   DistanciaRotIzquierda DistanciaRotDerecha GradosPorM RadioRot DesacelerEntRot DistanciaRotRecta DistanciaAlCentro TiempoReaccion ]
 breed [ carros carro ]
 turtles-own [ velocidad distanciaRot direccion ]
@@ -9,15 +9,16 @@ to setup
   clear-all
   set CarrosTransitados 0
   ; 100 ticks por segundo
-  set Aceleracion 0.0003 ; 5 m/s^2
-  set Desaceleracion 0.0003 ; 5 m/s^2
+  set Aceleracion 0.0005 ; 5 m/s^2
+  set Desaceleracion 0.0005 ; 5 m/s^2
   set VelocidadMax  0.16666667 ; 60km/h, 16,6667 m/s
   set VelocidadMin  1.e-9
   set VelocidadMaxAdentro  VelocidadMax * 0.5  ; la mitad de la velocidad normal
   set VelocidadMaxAfuera  VelocidadMax * 0.62  ; 62% de la velocidad normal
   set DistanciaRotDirecto 34.77
   set DistanciaRotIzquierda 58.34
-  set DistanciaRotDerecha 35.2
+  ;set DistanciaRotDerecha 35.2
+  set DistanciaRotDerecha 9.9
   set GradosPorM 3.81972
   set RadioRot sqrt (15 ^ 2 - 6 ^ 2)
   set DesacelerEntRot (VelocidadMax ^ 2 - VelocidadMaxAdentro ^ 2) / (2 * (Desaceleracion))
@@ -44,11 +45,32 @@ to setup
     [
       set pcolor grey
     ]
-    if abs (pxcor) > 1 and abs (pxcor) < 11 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+
+      if abs (pxcor) > 10 and abs (pxcor) < 20 and (pxcor ^ 2 + pycor ^ 2 > 20 ^ 2)
     [
       set pcolor grey
     ]
-    if abs (pycor) > 1 and abs (pycor) < 11 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+
+    if abs (pxcor) > 1 and abs (pxcor) < 11 and (pxcor ^ 2 + pycor ^ 2 > 30 ^ 2)
+    [
+      set pcolor white
+    ]
+
+    if abs (pxcor) > 1 and abs (pxcor) < 10 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+    [
+      set pcolor grey
+    ]
+
+    if abs (pycor) > 1 and abs (pycor) < 20 and (pxcor ^ 2 + pycor ^ 2 > 10 ^ 2)
+    [
+      set pcolor grey
+    ]
+
+     if abs (pycor) > 1 and abs (pycor) < 10 and (pxcor ^ 2 + pycor ^ 2 > 30 ^ 2)
+    [
+      set pcolor white
+    ]
+     if abs (pycor) > 1 and abs (pycor) < 9 and (pxcor ^ 2 + pycor ^ 2 > 30 ^ 2)
     [
       set pcolor grey
     ]
@@ -68,16 +90,28 @@ to setup
   reset-ticks
 end
 
-to distribuir-carros
+to distribuir-carros  ;; procedure
   set heading random 4 * 90
   if (heading = 0)
-    [setxy 6 (38 + random (max-pycor - 38)) * (2 * random 2 - 1)]
+    [setxy 6 (38 + random (max-pycor - 38)) * (2 * random 2 - 1)
+      if (color = red)
+      [set xcor (xcor + 9)]
+    ]
   if (heading = 90)
-    [setxy ((38 + random (max-pxcor - 38)) * (2 * random 2 - 1)) -6]
+    [setxy ((38 + random (max-pxcor - 38)) * (2 * random 2 - 1)) -6
+      if (color = red)
+      [set ycor (ycor - 9)]
+    ]
   if (heading = 180)
-    [setxy -6 ((38 + random (max-pycor - 38)) * (2 * random 2 - 1))]
+    [setxy -6 ((38 + random (max-pycor - 38)) * (2 * random 2 - 1))
+      if (color = red)
+      [set xcor (xcor - 9)]
+    ]
   if (heading = 270)
-    [setxy ((38 + random (max-pxcor - 38)) * (2 * random 2 - 1)) 6]
+    [setxy ((38 + random (max-pxcor - 38)) * (2 * random 2 - 1)) 6
+      if (color = red)
+      [set ycor (ycor + 9)]
+    ]
   if any? other turtles-here
     [ distribuir-carros ]
 end
@@ -92,7 +126,7 @@ to avance
   let miDir heading
   set direccion (subtract-headings miDir (towardsxy 0 0))
   let dist00 distancexy 0 0
-  ifelse color = red and dist00 < 31.7
+  ifelse color = red and dist00 < 26.7;31.7
   [
     porfuera
   ]
@@ -105,7 +139,7 @@ to avance
       porpista
     ]
   ]
-  plot [velocidad] of CarroEnf * 360 ; pasa de m/s a km/h
+  ;plot [velocidad] of CarroEnf * 360 ; pasa de m/s a km/h
 end
 
 to porfuera
@@ -183,14 +217,14 @@ end
 to porpista
   let miDir heading
   let distCentro (distancexy 0 0)
-  let velocidad1 velocidad ; guarda la velocidad inicial para su uso posterior
+  let velocidad1 velocidad;; guarda la velocidad inicial para su uso posterior
   if ( distCentro > 15)
   [
     let distSeparacion SeparacionMin + velocidad * TiempoReaccion
     let carrosMismaDir other carros with [heading = miDir]
     ifelse any? carrosMismaDir
     [
-      let carrosFrente other carrosMismaDir with [(distance myself) != 0 and (towards myself) != miDir]
+      let carrosFrente other carrosMismaDir with [(distance myself) != 0 and (towards myself) != miDir and (xcor = ([xcor] of myself) or ycor = ([ycor] of myself))]
       ifelse any? carrosFrente
       [
         let carroMasCerca (min-one-of carrosFrente [distance myself])
@@ -214,7 +248,7 @@ to porpista
       [ set velocidad velocidad + Aceleracion ] ; fin carrosFrente
     ]
     [ set velocidad velocidad + Aceleracion ] ; fin carrosMismaDir
-  ] ; fin distCentro
+  ] ; fin distancexy 0 0
     ;  if ( (distancexy 0 0) > 15 and (distancexy 0 0) < 16.7)
     ; [
     ;  let carros-45degree carros with [(subtract-headings heading miDir = -45) ]
@@ -278,29 +312,37 @@ to coordinaDireccion
   if (heading > 355 or heading < 5)
   [
     set heading 0
-    set xcor 6
+    ifelse (color = red)
+    [set xcor 15]
+    [set xcor 6]
   ]
   if (heading > 85 and heading < 95)
   [
     set heading 90
-    set ycor -6
+    ifelse (color = red)
+    [set ycor -15]
+    [set ycor -6]
   ]
   if (heading > 175 and heading < 185)
   [
     set heading 180
-    set xcor -6
+    ifelse (color = red)
+    [set xcor -15]
+    [set xcor -6]
   ]
   if (heading > 265 and heading < 275)
   [
     set heading 270
-    set ycor 6
+    ifelse (color = red)
+    [set ycor 15]
+    [set ycor 6]
   ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-215
+230
 10
-710
+725
 526
 120
 120
@@ -318,17 +360,17 @@ GRAPHICS-WINDOW
 120
 -120
 120
-1
-1
+0
+0
 1
 ticks
 30.0
 
 BUTTON
-11
-10
-75
-45
+58
+15
+122
+50
 NIL
 setup
 NIL
@@ -342,10 +384,10 @@ NIL
 1
 
 BUTTON
-10
-63
-73
-96
+57
+68
+120
+101
 NIL
 go
 T
@@ -359,25 +401,25 @@ NIL
 1
 
 SLIDER
-99
+138
 10
-132
+171
 160
 NumCarros
 NumCarros
 1
-30
-25
+40
+40
 1
 1
 NIL
 VERTICAL
 
 PLOT
-4
-191
-204
-341
+10
+255
+210
+405
 Velocidad
 NIL
 km/h
@@ -389,13 +431,13 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" ""
+"default" 1.0 0 -16777216 true "" "plot [velocidad] of CarroEnf * 360"
 
 MONITOR
-116
-363
-189
-408
+125
+420
+186
+465
 Direccion
 [heading] of CarroEnf
 2
@@ -403,10 +445,10 @@ Direccion
 11
 
 MONITOR
-10
-363
-95
-408
+37
+422
+109
+467
 carros/min
 CarrosTransitados / ticks * 6000
 0
@@ -414,10 +456,10 @@ CarrosTransitados / ticks * 6000
 11
 
 MONITOR
-32
-430
-170
-475
+52
+477
+173
+522
 Tránsito de Carros
 CarrosTransitados
 17
@@ -425,10 +467,10 @@ CarrosTransitados
 11
 
 BUTTON
-10
-114
-74
-147
+57
+119
+121
+152
 step
 go
 NIL
@@ -442,25 +484,25 @@ NIL
 1
 
 SLIDER
-729
-10
-921
-43
+18
+167
+210
+200
 Aceleracion
 Aceleracion
 0
 0.002
-3.0E-4
+5.0E-4
 0.0001
 1
 NIL
 HORIZONTAL
 
 SLIDER
-728
-54
-921
-87
+17
+213
+210
+246
 SeparacionMin
 SeparacionMin
 5
@@ -471,20 +513,131 @@ SeparacionMin
 NIL
 HORIZONTAL
 
-SLIDER
-751
-115
-940
-148
-VelocidadMax
-VelocidadMax
-0
+MONITOR
+762
+79
+960
+124
+Promedio total
+(((sum [velocidad] of turtles) / (count turtles)) * 100) * 3.6
+17
 1
-0.16666667
-0.01
-1
+11
+
+PLOT
+761
+138
+961
+288
+Promedio total
 NIL
-HORIZONTAL
+km/h
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Promedio" 1.0 0 -7500403 true "" "plot (((sum [velocidad] of turtles) / (count turtles)) * 100) * 3.6"
+
+PLOT
+984
+138
+1184
+288
+Promedio rojos
+NIL
+km/h
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Promedio" 1.0 0 -16777216 true "" "plot (((sum [velocidad] of turtles with [color = red]) / (count turtles with [color = red])) * 100) * 3.6"
+
+MONITOR
+984
+80
+1184
+125
+Promedio rojos
+(((sum [velocidad] of turtles with [color = red]) / (count turtles with [color = red])) * 100) * 3.6
+17
+1
+11
+
+MONITOR
+762
+305
+961
+350
+Promedio verdes
+(((sum [velocidad] of turtles with [color = green]) / (count turtles with [color = green])) * 100) * 3.6
+17
+1
+11
+
+PLOT
+764
+363
+964
+513
+Promedio verdes
+NIL
+km/h
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot (((sum [velocidad] of turtles with [color = green]) / (count turtles with [color = green])) * 100) * 3.6"
+
+MONITOR
+984
+306
+1185
+351
+Promedio azules
+(((sum [velocidad] of turtles with [color = sky]) / (count turtles with [color = sky])) * 100) * 3.6
+17
+1
+11
+
+PLOT
+983
+367
+1183
+517
+Promedio azules
+NIL
+km/h
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot (((sum [velocidad] of turtles with [color = sky]) / (count turtles with [color = sky])) * 100) * 3.6"
+
+TEXTBOX
+823
+21
+1117
+79
+Promedios de Velocidad:
+24
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
