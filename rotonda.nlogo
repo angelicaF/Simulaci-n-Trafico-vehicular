@@ -87,10 +87,10 @@ to setup
     [
       set pcolor grey
     ]
-;    if ((pxcor = -85) and (pycor = -5))
-;    [
-;      set pcolor yellow
-;    ]
+    if ((pxcor = 6) and (pycor = -85))
+    [
+      set pcolor yellow
+    ]
   ]
   reset-ticks
 end
@@ -227,7 +227,8 @@ to porpista
   let distCentro (distancexy 0 0)
   let velocidad1 velocidad;; guarda la velocidad inicial para su uso posterior
   
-  if(xcor > -85 and xcor < -80  and ycor = -6)[
+  ;para que los carros  rojos de heading 90 se cambien de carril
+  if(xcor > -100 and xcor < -80  and ycor = -6)[
       if(color = red)
       [
         if(heading = 90)[
@@ -251,6 +252,38 @@ to porpista
       ]
         
    ]
+  ;fin de para que los carros  rojos de heading 0 se cambien de carril
+  ; if ((pxcor = 6) and (pycor = -85)) 
+  
+  ;para que los carros  rojos de heading 90 se cambien de carril
+  if(ycor > -100 and ycor < -80  and xcor = 6)[
+      if(color = red)
+      [
+;        if(heading = 0)[
+;          let carrosMismaDir1 other carros with [heading = miDir]
+;          ifelse any? carrosMismaDir1
+;          [
+;            let carrosLado other carrosMismaDir1 with [ (xcor = ([xcor] of myself) and xcor != (-1))]
+;            ifelse any? carrosLado
+;            [
+;                            
+;            ]
+;            [
+;              set ycor -15
+;            ]
+;            
+;          ]
+;          [
+;              set ycor -15                     
+;          ]   
+;        ]
+       set xcor 15
+      ]
+        
+   ]
+  ;fin de para que los carros  rojos de heading 0 se cambien de carril
+  
+  
 
   
   if ( distCentro > 15)
@@ -349,7 +382,15 @@ to coordinaDireccion
   [
     set heading 0
     ifelse (color = red)
-    [set xcor 15]
+    [
+      set Pos random (100)
+      ifelse(Pos < 30)[       
+        set xcor 15        
+      ]
+     [
+       set xcor 6  
+     ]
+    ]
     [set xcor 6]
   ]
   if (heading > 85 and heading < 95)
