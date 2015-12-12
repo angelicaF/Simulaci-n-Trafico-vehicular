@@ -231,23 +231,22 @@ to porpista
       if(color = red)
       [
         if(heading = 90)[
-;          let carrosMismaDir1 other carros with [heading = miDir]
-;          ifelse any? carrosMismaDir1
-;          [
-;            let carrosLado other carrosMismaDir1 with [(towards myself) != miDir and (xcor = ([xcor] of myself) and ycor != (-15))]
-;            ifelse any? carrosLado
-;            [
-;              set color yellow
-;              
-;            ]
-;            [
-;              set ycor -15
-;            ]
-;            
-;          ][]  
-         ;set pcolor yellow
-        ;stop
-        set ycor -15  
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
+          [
+            let carrosLado other carrosMismaDir1 with [ (xcor = ([xcor] of myself) and ycor != (-15))]
+            ifelse any? carrosLado
+            [
+                            
+            ]
+            [
+              set ycor -15
+            ]
+            
+          ]
+          [
+              set ycor -15                     
+          ]   
         ]       
       ]
         
@@ -359,7 +358,7 @@ to coordinaDireccion
     ifelse (color = red)
     [
       set Pos random (100)
-      ifelse(Pos < 50)[       
+      ifelse(Pos < 30)[       
         set ycor -15        
       ]
      [
