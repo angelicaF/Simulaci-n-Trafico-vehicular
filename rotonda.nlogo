@@ -286,10 +286,11 @@ to porpista
       if(color = red)
       [
        if(heading = 0)[
+         ;revisa que no haya un carro al lado para que se pueda cambiar de carril
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
           [
-            let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself) and xcor != (15))]
+            let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself) and xcor = (15))]
             ifelse any? carrosLado
             [
               set ycor 6
@@ -313,10 +314,11 @@ to porpista
       if(color = red)
       [
        if(heading = 90)[
+         ;revisa que no haya un carro al lado para que se pueda cambiar de carril
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
           [
-            let carrosLado other carrosMismaDir1 with [ (xcor = ([xcor] of myself) and ycor != (-15))]
+            let carrosLado other carrosMismaDir1 with [ (xcor = ([xcor] of myself) and ycor = (-15))]
             ifelse any? carrosLado
             [
               set ycor  -6
@@ -340,7 +342,7 @@ to porpista
       if(color = red)
       [
         if(heading = 180)[
-
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
           [
@@ -369,7 +371,7 @@ to porpista
       if(color = red)
       [
         if(heading = 270)[
-
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
           [
