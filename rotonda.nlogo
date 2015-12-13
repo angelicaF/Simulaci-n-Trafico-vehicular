@@ -87,7 +87,7 @@ to setup
     [
       set pcolor grey
     ]
-    if ((pxcor = 6) and (pycor = -85))
+    if ((pxcor = 120) and (pycor = 50))
     [
       set pcolor yellow
     ]
@@ -134,8 +134,57 @@ to avance
   let miDir heading
   set direccion (subtract-headings miDir (towardsxy 0 0))
   let dist00 distancexy 0 0
+
+  ;;*************************ANGELICA*********************************************
+  ;;ESTO ES PARA COLOCAR LOS CARROS EN CARRIL ALEATORIO ANTES DE ETRAR A LA PISTA
+  ;;PARA QUE ALGUNOS SALGAN EN EL DE AFUERA Y OTROS EN EL DE ADENTRO
+
+  ;coloca los carros rojos en los carriles antes de entrar a la pista
+  if(ycor < -120 and color = red and heading = 0)[
+      set Pos random (100)
+      ifelse(Pos < 30)
+      [
+        set xcor 15
+      ]
+      [
+       set xcor 6
+      ]
+  ]
+  if(xcor < -120 and color = red and heading = 90)[
+      set Pos random (100)
+      ifelse(Pos < 30)
+      [
+        set ycor -15
+      ]
+      [
+       set ycor -6
+      ]
+  ]
+  if(ycor > 120 and color = red and heading = 180)[
+      set Pos random (100)
+      ifelse(Pos < 30)
+      [
+        set xcor -15
+      ]
+      [
+       set xcor -6
+      ]
+  ]
+  if(xcor > 120 and color = red and heading = 270)[
+    set Pos random (100)
+    ifelse(Pos < 30)
+    [
+      set ycor 15
+    ]
+    [
+     set ycor 6
+    ]
+  ]
+   ;;*************************ANGELICA************************
+
   ifelse color = red and dist00 < 26.7;31.7
   [
+
     porfuera
   ]
   [
@@ -227,18 +276,50 @@ to porpista
   let distCentro (distancexy 0 0)
   let velocidad1 velocidad;; guarda la velocidad inicial para su uso posterior
 
+
+
+;;*************************ANGELICA************************
+;;PARA QUE LOS CARROS ROJOS SE CAMBIEN DE CARRIL
+
+  ;para que los carros  rojos de heading 0 se cambien de carril
+  if(ycor > -100 and ycor < -80  and xcor = 6)[
+      if(color = red)
+      [
+       if(heading = 0)[
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
+          [
+            let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself) and xcor != (15))]
+            ifelse any? carrosLado
+            [
+              set ycor 6
+            ]
+            [
+              set xcor 15
+            ]
+
+          ]
+          [
+              set xcor 15
+          ]
+       ]
+
+      ]
+   ]
+  ;fin de para que los carros  rojos de heading 0 se cambien de carril
+
   ;para que los carros  rojos de heading 90 se cambien de carril
   if(xcor > -100 and xcor < -80  and ycor = -6)[
       if(color = red)
       [
-        if(heading = 90)[
+       if(heading = 90)[
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
           [
             let carrosLado other carrosMismaDir1 with [ (xcor = ([xcor] of myself) and ycor != (-15))]
             ifelse any? carrosLado
             [
-
+              set ycor  -6
             ]
             [
               set ycor -15
@@ -250,38 +331,69 @@ to porpista
           ]
         ]
       ]
-
    ]
-  ;fin de para que los carros  rojos de heading 0 se cambien de carril
-  ; if ((pxcor = 6) and (pycor = -85))
+;fin de para que los carros  rojos de heading 90 se cambien de carril
 
-  ;para que los carros  rojos de heading 90 se cambien de carril
-  if(ycor > -100 and ycor < -80  and xcor = 6)[
+;para que los carros  rojos de heading 180 se cambien de carril
+;
+  if(ycor > 80 and ycor < 90  and xcor = -6)[
       if(color = red)
       [
-;        if(heading = 0)[
-;          let carrosMismaDir1 other carros with [heading = miDir]
-;          ifelse any? carrosMismaDir1
-;          [
-;            let carrosLado other carrosMismaDir1 with [ (xcor = ([xcor] of myself) and xcor != (-1))]
-;            ifelse any? carrosLado
-;            [
-;
-;            ]
-;            [
-;              set ycor -15
-;            ]
-;
-;          ]
-;          [
-;              set ycor -15
-;          ]
-;        ]
-       set xcor 15
-      ]
+        if(heading = 180)[
 
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
+          [
+            let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself) and xcor = (-15))]
+            ifelse any? carrosLado
+            [
+              set xcor  -6
+            ]
+            [
+              set xcor -15
+            ]
+
+          ]
+          [
+              set xcor -15
+          ]
+
+        ]
+      ]
    ]
-  ;fin de para que los carros  rojos de heading 0 se cambien de carril
+;fin de para que los carros  rojos de heading 180 se cambien de carril
+
+
+;para que los carros  rojos de heading 270 se cambien de carril
+  if(xcor > 80 and xcor < 90  and ycor = 6)[
+      if(color = red)
+      [
+        if(heading = 270)[
+
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
+          [
+            let carrosLado other carrosMismaDir1 with [ (xcor = ([xcor] of myself) and ycor = (15))]
+            ifelse any? carrosLado
+            [
+               set ycor 6
+            ]
+            [
+              set ycor 15
+            ]
+          ]
+          [
+              set ycor 15
+          ]
+        ]
+      ]
+   ]
+;fin de para que los carros  rojos de heading 270 se cambien de carril
+
+
+;;*************************ANGELICA************************
+
+
 
 
 
@@ -383,13 +495,7 @@ to coordinaDireccion
     set heading 0
     ifelse (color = red)
     [
-      set Pos random (100)
-      ifelse(Pos < 30)[
-        set xcor 15
-      ]
-     [
-       set xcor 6
-     ]
+      ;set xcor 15
     ]
     [set xcor 6]
   ]
@@ -398,13 +504,7 @@ to coordinaDireccion
     set heading 90
     ifelse (color = red)
     [
-      set Pos random (100)
-      ifelse(Pos < 30)[
-        set ycor -15
-      ]
-     [
-       set ycor -6
-     ]
+       ; set ycor -15
     ]
     [set ycor -6]
   ]
@@ -412,14 +512,18 @@ to coordinaDireccion
   [
     set heading 180
     ifelse (color = red)
-    [set xcor -15]
+    [
+      ;set xcor -15
+    ]
     [set xcor -6]
   ]
   if (heading > 265 and heading < 275)
   [
     set heading 270
     ifelse (color = red)
-    [set ycor 15]
+    [
+      ;set ycor 15
+    ]
     [set ycor 6]
   ]
 end
