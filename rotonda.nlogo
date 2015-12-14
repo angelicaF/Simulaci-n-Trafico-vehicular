@@ -130,17 +130,17 @@ end
 
 to seleccionaRegla
   if(Regla = "Cambia cuando hay mucha presa")[
-     presa
-     ;set color  black
-   ]
+    presa
+    ;set color  black
+  ]
   if(Regla = "Cambia cuando llega al final")[
-     final
-     ;set color  yellow
-   ]
+    final
+    ;set color  yellow
+  ]
   if(Regla = "Cambia apenas pueda")[
-     cambio
-     ;set color  white
-   ]
+    cambio
+    ;set color  white
+  ]
 end
 
 
@@ -149,10 +149,6 @@ to avance
   let miDir heading
   set direccion (subtract-headings miDir (towardsxy 0 0))
   let dist00 distancexy 0 0
-
-  ;;*************************ANGELICA*********************************************
-  ;;ESTO ES PARA COLOCAR LOS CARROS EN CARRIL ALEATORIO ANTES DE ETRAR A LA PISTA
-  ;;PARA QUE ALGUNOS SALGAN EN EL DE AFUERA Y OTROS EN EL DE ADENTRO
 
   ;coloca los carros rojos en los carriles antes de entrar a la pista
   if(ycor < -120 and color = red and heading = 0)[
@@ -195,11 +191,7 @@ to avance
       set ycor 6
     ]
   ]
-  ;;*************************ANGELICA FIN************************
-
-  ;;*************************DAVES*********************************************
-  ;;ESTO ES PARA COLOCAR LOS CARROS EN CARRIL ALEATORIO ANTES DE ENTRAR A LA PISTA
-  ;;PARA QUE ALGUNOS SALGAN EN EL DE AFUERA Y OTROS EN EL DE ADENTRO
+  ;fin coloca rojos
 
   ;coloca los carros verdes y azules en los carriles antes de entrar a la pista
   if(ycor < -120 and (color = green or color = sky) and heading = 0)[
@@ -242,7 +234,7 @@ to avance
       set ycor 6
     ]
   ]
-  ;;*************************DAVES FIN************************
+  ;fin coloca verdes y azules
 
   ifelse color = red and dist00 < 26.7;31.7
   [
@@ -258,7 +250,6 @@ to avance
       porpista
     ]
   ]
-  ;plot [velocidad] of CarroEnf * 360 ; pasa de m/s a km/h
 end
 
 to porfuera
@@ -293,12 +284,10 @@ to porfuera
     if (velocidad > VelocidadMaxAfuera) [set velocidad VelocidadMaxAfuera]
     if (velocidad < VelocidadMin) [set velocidad VelocidadMin]
 
-    ;    plot [velocidad] of CarroEnf * 3.6 ; pasa de m/s a km/h
     fd velocidad
     set distanciaRot distanciaRot + velocidad
   ]
   [
-    ;    plot [velocidad] of CarroEnf * 3.6 ; pasa de m/s a km/h
     rt 45
     fd velocidad
     set distanciaRot 0
@@ -336,10 +325,10 @@ end
 to porpista
   let miDir heading
   let distCentro (distancexy 0 0)
-  let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
+  ; guarda la velocidad inicial para su uso posterior
+  let velocidad1 velocidad
+  ; método que escoge una regla para utilizar para el cambio de carril dependiendo de la seleccionada por el usuario
   seleccionaRegla
-
-
 
 
   ifelse(espera = 0) [
@@ -442,16 +431,16 @@ end
 
 
 to presa
-;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-; EL CAMBIO DE CARRIL SE DA SI SE DETECTA QUE HAY PRESA, ES DECIR SI VA AVANZANDO MUY LENTAMENTE +
-;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ; EL CAMBIO DE CARRIL SE DA SI SE DETECTA QUE HAY PRESA, ES DECIR SI VA AVANZANDO MUY LENTAMENTE +
+  ;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-let miDir heading
-let distCentro (distancexy 0 0)
-let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
-;*****************************ANGELICA***************************
-;  ;;PARA QUE LOS CARROS ROJOS SE CAMBIEN DE CARRIL
-;
+  let miDir heading
+  let distCentro (distancexy 0 0)
+  ; guarda la velocidad inicial para su uso posterior
+  let velocidad1 velocidad
+
+  ;***********************ROJOS*******************************
   ;para que los carros  rojos de heading 0 se cambien de carril
   ifelse(ycor > -110 and ycor < ((RadioRot * -1) - 20)  and xcor = 6)[
     if(color = red)
@@ -490,33 +479,33 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
   ]
   ;fin de para que los carros  rojos de heading 0 se cambien de carril
 
-    ;para que los carros  rojos de heading 90 se cambien de carril
+  ;para que los carros  rojos de heading 90 se cambien de carril
   ifelse(xcor > -110 and xcor < ((RadioRot * -1) - 20)  and ycor = -6)[
     if(color = red)
       [
         if(heading = 90)[
           if( velocidad1 < 0.01)[
-          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-          let carrosMismaDir1 other carros with [heading = miDir]
-          ifelse any? carrosMismaDir1
-          [
-
-            let carrosLado other carrosMismaDir1 with [(([xcor] of myself) = xcor)   and ycor = -15]
-            ifelse any? carrosLado
+            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+            let carrosMismaDir1 other carros with [heading = miDir]
+            ifelse any? carrosMismaDir1
             [
-              set ycor  -6
+
+              let carrosLado other carrosMismaDir1 with [(([xcor] of myself) = xcor)   and ycor = -15]
+              ifelse any? carrosLado
+              [
+                set ycor  -6
+              ]
+              [
+                set ycor -15
+                set espera 0
+              ]
+
             ]
             [
               set ycor -15
               set espera 0
             ]
-
           ]
-          [
-            set ycor -15
-            set espera 0
-          ]
-        ]
         ]
       ]
   ]
@@ -529,7 +518,7 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
   ;fin de para que los carros  rojos de heading 90 se cambien de carril
 
 
-    ;para que los carros  rojos de heading 180 se cambien de carril
+  ;para que los carros  rojos de heading 180 se cambien de carril
   ifelse(ycor > (RadioRot + 20) and ycor < 110  and xcor = -6)[
     if(color = red)
       [
@@ -573,25 +562,25 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       [
         if(heading = 270)[
           if( velocidad1 < 0.01)[
-          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-          let carrosMismaDir1 other carros with [heading = miDir]
-          ifelse any? carrosMismaDir1
-          [
-            let carrosLado other carrosMismaDir1 with [ (xcor =([xcor] of myself)) and ycor = 15]
-            ifelse any? carrosLado
+            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+            let carrosMismaDir1 other carros with [heading = miDir]
+            ifelse any? carrosMismaDir1
             [
-              set ycor  6
+              let carrosLado other carrosMismaDir1 with [ (xcor =([xcor] of myself)) and ycor = 15]
+              ifelse any? carrosLado
+              [
+                set ycor  6
+              ]
+              [
+                set ycor 15
+                set espera 0
+              ]
             ]
             [
               set ycor 15
               set espera 0
             ]
           ]
-          [
-            set ycor 15
-            set espera 0
-          ]
-        ]
         ]
       ]
   ]
@@ -604,13 +593,8 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
   ;fin de para que los carros  rojos de heading 270 se cambien de carril
 
 
-;*************************ANGELICA FIN************************
-;
-;
-;*****************************DAVES***************************
-;  ;;PARA QUE LOS OTROS CARROS SE CAMBIEN DE CARRIL
-;
-;  ;para que los carros de heading 0 se cambien de carril
+  ;***********************AZULES Y VERDES*******************************
+  ;para que los carros azules y verdes de heading 0 se cambien de carril
   ifelse(ycor > -110 and ycor <= ((RadioRot * -1) - 20)  and xcor = 15)[
     if(color = sky or color = green)
       [
@@ -646,9 +630,9 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-  ;fin de para que los carros  rojos de heading 0 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 0 se cambien de carril
 
-  ;para que los carros  rojos de heading 90 se cambien de carril
+  ;para que los carros azules y verdes de heading 90 se cambien de carril
   ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 20)  and ycor = -15)[
     if(color = sky or color = green)
       [
@@ -674,7 +658,7 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
               set ycor -6
               set espera 0
             ]
-         ]
+          ]
         ]
       ]
   ]
@@ -684,9 +668,9 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-  ;fin de para que los carros  rojos de heading 90 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 90 se cambien de carril
 
-  ;para que los carros  rojos de heading 180 se cambien de carril
+  ;para que los carros azules y verdes de heading 180 se cambien de carril
   ifelse(ycor >= (RadioRot + 20) and ycor < 110  and xcor = -15)[
     if(color = sky or color = green)
       [
@@ -722,10 +706,10 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-  ;fin de para que los carros  rojos de heading 180 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 180 se cambien de carril
 
 
-  ;para que los carros  rojos de heading 270 se cambien de carril
+  ;para que los carros azules y verdes de heading 270 se cambien de carril
   ifelse(xcor >= (RadioRot + 20) and xcor < 110  and ycor = 15)[
     if(color = sky or color = green)
       [
@@ -760,22 +744,21 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-  ;fin de para que los carros  rojos de heading 270 se cambien de carril
-  ;;*************************DAVES****************************************
+  ;fin de para que los carros azules y verdes de heading 270 se cambien de carril
 
 end
 
 
 to final
-;;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-; EL CAMBIO DE CARRIL SE DA JUSTO ANTES DE ENTRAR A LA ROTONDA+
-;;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-let miDir heading
-let distCentro (distancexy 0 0)
-let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
-;*****************************ANGELICA***************************
-;  ;;PARA QUE LOS CARROS ROJOS SE CAMBIEN DE CARRIL
-;
+  ;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ; +EL CAMBIO DE CARRIL SE DA JUSTO ANTES DE ENTRAR A LA ROTONDA+
+  ;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  let miDir heading
+  let distCentro (distancexy 0 0)
+  ; guarda la velocidad inicial para su uso posterior
+  let velocidad1 velocidad
+
+  ;***********************ROJOS*******************************
   ;para que los carros  rojos de heading 0 se cambien de carril
   ifelse(ycor > -45 and ycor < ((RadioRot * -1) - 20)  and xcor = 6)[
     if(color = red)
@@ -783,9 +766,9 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
         if(heading = 0)[
           ;set color pink
 
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (([ycor] of myself) = ycor)    and xcor = 15]
               ifelse any? carrosLado
@@ -813,7 +796,7 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
   ]
   ;fin de para que los carros  rojos de heading 0 se cambien de carril
 
-    ;para que los carros  rojos de heading 90 se cambien de carril
+  ;para que los carros  rojos de heading 90 se cambien de carril
   ifelse(xcor > -45 and xcor < -20  and ycor = -6)[
     if(color = red)
       [
@@ -851,14 +834,14 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
   ;fin de para que los carros  rojos de heading 90 se cambien de carril
 
 
-;para que los carros  rojos de heading 180 se cambien de carril
+  ;para que los carros  rojos de heading 180 se cambien de carril
   ifelse(ycor > 20 and ycor < 45  and xcor = -6)[
     if(color = red)
       [
         if(heading = 180)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself))   and xcor = -15]
               ifelse any? carrosLado
@@ -884,9 +867,9 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       ;set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 180 se cambien de carril
+  ;fin de para que los carros  rojos de heading 180 se cambien de carril
 
-;para que los carros  rojos de heading 270 se cambien de carril
+  ;para que los carros  rojos de heading 270 se cambien de carril
   ifelse(xcor > 20  and xcor < 45  and ycor = 6)[
     if(color = red)
       [
@@ -918,23 +901,17 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       ;set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 270 se cambien de carril
+  ;fin de para que los carros  rojos de heading 270 se cambien de carril
 
-
-;*************************ANGELICA FIN************************
-
-
-;*****************************DAVES***************************
-;  ;;PARA QUE LOS OTROS CARROS SE CAMBIEN DE CARRIL
-;
-;  ;para que los carros de heading 0 se cambien de carril
+  ;***********************AZULES Y VERDES*******************************
+  ;para que los carros azules y verdes de heading 0 se cambien de carril
   ifelse(ycor > -45 and ycor < ((RadioRot * -1) - 20)  and xcor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 0)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (([ycor] of myself) = ycor)  and xcor = 6]
               ifelse any? carrosLado
@@ -952,7 +929,7 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
               set xcor 6
               set espera 0
             ]
-          ]
+        ]
       ]
   ]
   ;caso en que se debe detener para hacer el cambio
@@ -961,16 +938,16 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 0 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 0 se cambien de carril
 
-  ;para que los carros  rojos de heading 90 se cambien de carril
+  ;para que los carros azules y verdes de heading 90 se cambien de carril
   ifelse(xcor > -45 and xcor < -20   and ycor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 90)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [(([xcor] of myself) = xcor)   and ycor = -15]
               ifelse any? carrosLado
@@ -997,16 +974,16 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 90 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 90 se cambien de carril
 
-  ;para que los carros  rojos de heading 180 se cambien de carril
+  ;para que los carros azules y verdes de heading 180 se cambien de carril
   ifelse(ycor > 20 and ycor < 45  and xcor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 180)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself))    and xcor = -6]
               ifelse any? carrosLado
@@ -1033,17 +1010,17 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 180 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 180 se cambien de carril
 
 
-  ;para que los carros  rojos de heading 270 se cambien de carril
+  ;para que los carros azules y verdes de heading 270 se cambien de carril
   ifelse(xcor > 20  and xcor < 45  and ycor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 270)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (xcor =([xcor] of myself))  and ycor = 6]
               ifelse any? carrosLado
@@ -1069,30 +1046,29 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 270 se cambien de carril
-;*************************DAVES****************************************
+  ;fin de para que los carros azules y verdes de heading 270 se cambien de carril
 
 
 end
 
 to cambio
-;;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-; EL CAMBIO DE CARRIL SE DA APENAS SE DETENCA QUE ESTA EN EL CARRIL EQUIVOCADO+
-;;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-let miDir heading
-let distCentro (distancexy 0 0)
-let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
-;*****************************ANGELICA***************************
-;  ;;PARA QUE LOS CARROS ROJOS SE CAMBIEN DE CARRIL
-;
+  ;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ; +EL CAMBIO DE CARRIL SE DA APENAS SE DETECTA QUE ESTA EN EL CARRIL EQUIVOCADO+
+  ;;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  let miDir heading
+  let distCentro (distancexy 0 0)
+  ;guarda la velocidad inicial para su uso posterior
+  let velocidad1 velocidad
+
+  ;***********************ROJOS*******************************
   ;para que los carros  rojos de heading 0 se cambien de carril
   ifelse(ycor > -115 and ycor < -40  and xcor = 6)[
     if(color = red)
       [
         if(heading = 0)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (([ycor] of myself) = ycor)    and xcor = 15]
               ifelse any? carrosLado
@@ -1118,9 +1094,9 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       ;set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 0 se cambien de carril
+  ;fin de para que los carros  rojos de heading 0 se cambien de carril
 
-;para que los carros  rojos de heading 90 se cambien de carril
+  ;para que los carros  rojos de heading 90 se cambien de carril
   ifelse(xcor > -110 and xcor < -40  and ycor = -6)[
     if(color = red)
       [
@@ -1155,17 +1131,16 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       ;set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 90 se cambien de carril
-;
+  ;fin de para que los carros  rojos de heading 90 se cambien de carril
 
-;para que los carros  rojos de heading 180 se cambien de carril
+  ;para que los carros  rojos de heading 180 se cambien de carril
   ifelse(ycor > 40 and ycor < 110  and xcor = -6)[
     if(color = red)
       [
         if(heading = 180)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself))   and xcor = -15]
               ifelse any? carrosLado
@@ -1191,9 +1166,9 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       ;set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 180 se cambien de carril
+  ;fin de para que los carros  rojos de heading 180 se cambien de carril
 
-;para que los carros  rojos de heading 270 se cambien de carril
+  ;para que los carros  rojos de heading 270 se cambien de carril
   ifelse(xcor > 40 and xcor < 110  and ycor = 6)[
     if(color = red)
       [
@@ -1225,23 +1200,17 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       ;set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 270 se cambien de carril
-;
-;
-;;*************************ANGELICA FIN************************
-;
-;
-;;*****************************DAVES***************************
-;  ;;PARA QUE LOS OTROS CARROS SE CAMBIEN DE CARRIL
-;
-;  ;para que los carros de heading 0 se cambien de carril
+  ;fin de para que los carros  rojos de heading 270 se cambien de carril
+
+  ;***********************AZULES Y VERDES*******************************
+  ;para que los carros azules y verdes de heading 0 se cambien de carril
   ifelse(ycor > -115 and ycor < -40  and xcor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 0)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (([ycor] of myself) = ycor)  and xcor = 6]
               ifelse any? carrosLado
@@ -1259,7 +1228,7 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
               set xcor 6
               set espera 0
             ]
-          ]
+        ]
       ]
   ]
   ;caso en que se debe detener para hacer el cambio
@@ -1268,16 +1237,16 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 0 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 0 se cambien de carril
 
-  ;para que los carros  rojos de heading 90 se cambien de carril
+  ;para que los carros azules y verdes de heading 90 se cambien de carril
   ifelse(xcor > -110 and xcor < -40    and ycor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 90)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [(([xcor] of myself) = xcor)   and ycor = -15]
               ifelse any? carrosLado
@@ -1304,16 +1273,16 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 90 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 90 se cambien de carril
 
-  ;para que los carros  rojos de heading 180 se cambien de carril
+  ;para que los carros azules y verdes de heading 180 se cambien de carril
   ifelse(ycor > 40 and ycor < 110  and xcor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 180)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (ycor = ([ycor] of myself))    and xcor = -6]
               ifelse any? carrosLado
@@ -1340,17 +1309,17 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 180 se cambien de carril
+  ;fin de para que los carros azules y verdes de heading 180 se cambien de carril
 
 
-  ;para que los carros  rojos de heading 270 se cambien de carril
+  ;para que los carros azules y verdes de heading 270 se cambien de carril
   ifelse(xcor > 40 and xcor < 110  and ycor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 270)[
-            ;revisa que no haya un carro al lado para que se pueda cambiar de carril
-            let carrosMismaDir1 other carros with [heading = miDir]
-            ifelse any? carrosMismaDir1
+          ;revisa que no haya un carro al lado para que se pueda cambiar de carril
+          let carrosMismaDir1 other carros with [heading = miDir]
+          ifelse any? carrosMismaDir1
             [
               let carrosLado other carrosMismaDir1 with [ (xcor =([xcor] of myself))  and ycor = 6]
               ifelse any? carrosLado
@@ -1376,15 +1345,10 @@ let velocidad1 velocidad ;; guarda la velocidad inicial para su uso posterior
       set espera 1
     ]
   ]
-;fin de para que los carros  rojos de heading 270 se cambien de carril
-;*************************DAVES****************************************
-
+  ;fin de para que los carros  azules y verdes de heading 270 se cambien de carril
 
 
 end
-
-
-
 
 
 to coordinaDireccion
@@ -1496,7 +1460,7 @@ NumCarros
 NumCarros
 1
 100
-96
+70
 1
 1
 NIL
