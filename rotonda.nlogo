@@ -3,7 +3,7 @@
 globals [ CarroEnf CarrosTransitados Desaceleracion VelocidadMax VelocidadMin VelocidadMaxAdentro VelocidadMaxAfuera DistanciaRotDirecto
   DistanciaRotIzquierda DistanciaRotDerecha GradosPorM RadioRot DesacelerEntRot DistanciaRotRecta DistanciaAlCentro TiempoReaccion Pos]
 breed [ carros carro ]
-turtles-own [ velocidad distanciaRot direccion espera ]
+turtles-own [ velocidad distanciaRot direccion espera carril]
 
 to setup
   clear-all
@@ -38,6 +38,7 @@ to setup
     set direccion 0
     distribuir-carros
     set espera 0
+    set carril 0
   ]
   set CarroEnf one-of carros
   ;watch CarroEnf
@@ -149,144 +150,71 @@ to avance
   let miDir heading
   set direccion (subtract-headings miDir (towardsxy 0 0))
   let dist00 distancexy 0 0
-
-  ;coloca los carros rojos en los carriles antes de entrar a la pista
-  ifelse(ycor < -120 and color = red and heading = 0)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
+  ifelse(carril = 0)[
+    ;coloca los carros rojos en los carriles antes de entrar a la pista
+    if(ycor < -120 and heading = 0)[
+      set Pos random (100)
+      ifelse(Pos < 50)
       [
         set xcor 15
       ]
       [
         set xcor 6
       ]
-  ]
-  [
-    if(color = red and heading = 0)[
-      st
+      set carril 1
     ]
-  ]
-  ifelse(xcor < -120 and color = red and heading = 90)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
+    if(xcor < -120 and heading = 90)[
+      set Pos random (100)
+      ifelse(Pos < 50)
       [
         set ycor -15
       ]
       [
         set ycor -6
       ]
-  ]
-  [
-    if(color = red and heading = 90)[
-      st
+      set carril 1
     ]
-  ]
-  ifelse(ycor > 120 and color = red and heading = 180)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
+    if(ycor > 120 and heading = 180)[
+      set Pos random (100)
+      ifelse(Pos < 50)
       [
         set xcor -15
       ]
       [
         set xcor -6
       ]
-  ]
-  [
-    if(color = red and heading = 180)[
-      st
+      set carril 1
     ]
-  ]
-  ifelse(xcor > 120 and color = red and heading = 270)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
-    [
-      set ycor 15
-    ]
-    [
-      set ycor 6
-    ]
-  ]
-  [
-    if(color = red and heading = 270)[
-      st
-    ]
-  ]
-  ;fin coloca rojos
-
-  ;coloca los carros verdes y azules en los carriles antes de entrar a la pista
-  ifelse(ycor < -120 and (color = green or color = sky) and heading = 0)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
+    if(xcor > 120 and heading = 270)[
+      set Pos random (100)
+      ifelse(Pos < 50)
       [
-        set xcor 15
+        set ycor 15
       ]
       [
-        set xcor 6
+        set ycor 6
       ]
+      set carril 1
+    ]
+    ;fin coloca rojos
   ]
-  [
-    if(color != red and heading = 0)[
-      st
+  [ ;else carril = 0
+    if(ycor >= -115 and heading = 0)[
+      set carril 0
+    ]
+    if(xcor >= -115 and heading = 90)[
+      set carril 0
+    ]
+    if(ycor <= 115 and heading = 180)[
+      set carril 0
+    ]
+    if(xcor <= 115 and heading = 270)[
+      set carril 0
     ]
   ]
-  ifelse(xcor < -120 and (color = green or color = sky) and heading = 90)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
-      [
-        set ycor -15
-      ]
-      [
-        set ycor -6
-      ]
-  ]
-  [
-    if(color != red and heading = 90)[
-      st
-    ]
-  ]
-  ifelse(ycor > 120 and (color = green or color = sky) and heading = 180)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
-      [
-        set xcor -15
-      ]
-      [
-        set xcor -6
-      ]
-  ]
-  [
-    if(color != red and heading = 180)[
-      st
-    ]
-  ]
-  ifelse(xcor > 120 and (color = green or color = sky) and heading = 270)[
-    ht
-    set Pos random (100)
-    ifelse(Pos < 50)
-    [
-      set ycor 15
-    ]
-    [
-      set ycor 6
-    ]
-  ]
-  [
-    if(color != red and heading = 270)[
-      st
-    ]
-  ]
-  ;fin coloca verdes y azules
 
   ifelse color = red and dist00 < 26.7;31.7
   [
-
     porfuera
   ]
   [
@@ -387,12 +315,13 @@ to porpista
       let carrosMismaDir other carros with [heading = miDir]
       ifelse any? carrosMismaDir
       [
+        let carrosFrente1 other carrosMismaDir with [(distance myself) != 0 and (towards myself) != miDir]
         let carrosFrente other carrosMismaDir with [(distance myself) != 0 and (towards myself) != miDir]
-        ifelse(heading = 0 or heading = 180)[
-          set carrosFrente other carrosFrente with [xcor = ([xcor] of myself)]
+        ifelse(miDir = 0 or miDir = 180)[
+          set carrosFrente other carrosFrente1 with [xcor = ([xcor] of myself)]
         ]
         [
-          set carrosFrente other carrosFrente with [ycor = ([ycor] of myself)]
+          set carrosFrente other carrosFrente1 with [ycor = ([ycor] of myself)]
         ]
         ifelse any? carrosFrente
         [
@@ -477,7 +406,7 @@ to porpista
   ]
   ;esta esperando cambio de carril
   [
-    set velocidad 0
+    set velocidad 0.01
     cambioEspera
   ]
 
@@ -498,7 +427,7 @@ to presa
 
   ;***********************ROJOS*******************************
   ;para que los carros  rojos de heading 0 se cambien de carril
-  ifelse(ycor > -110 and ycor <= ((RadioRot * -1) - 10)  and xcor = 6)[
+  ifelse(ycor > -110 and ycor <= ((RadioRot * -1) - 12)  and xcor = 6)[
     if(color = red)
       [
         if(heading = 0)[
@@ -509,7 +438,7 @@ to presa
             let carrosMismaDir1 other carros with [heading = miDir]
             ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = 15]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = 15]
               ifelse any? carrosLado
               [
                 set xcor 6
@@ -530,14 +459,14 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor > ((RadioRot * -1) - 10) and color = red and xcor = 6) [
+    if(ycor > ((RadioRot * -1) - 12) and color = red and xcor = 6) [
       set espera 1
     ]
   ]
   ;fin de para que los carros  rojos de heading 0 se cambien de carril
 
   ;para que los carros  rojos de heading 90 se cambien de carril
-  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 10)  and ycor = -6)[
+  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 12)  and ycor = -6)[
     if(color = red)
       [
         if(heading = 90)[
@@ -547,7 +476,7 @@ to presa
             ifelse any? carrosMismaDir1
             [
 
-              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -15]
               ifelse any? carrosLado
               [
                 set ycor  -6
@@ -569,7 +498,7 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor > ((RadioRot * -1) - 10) and color = red and ycor = -6) [
+    if(xcor > ((RadioRot * -1) - 12) and color = red and ycor = -6) [
       set espera 1
     ]
   ]
@@ -577,7 +506,7 @@ to presa
 
 
   ;para que los carros  rojos de heading 180 se cambien de carril
-  ifelse(ycor >= (RadioRot + 10) and ycor < 110  and xcor = -6)[
+  ifelse(ycor >= (RadioRot + 12) and ycor < 110  and xcor = -6)[
     if(color = red)
       [
         if(heading = 180)[
@@ -586,7 +515,7 @@ to presa
             let carrosMismaDir1 other carros with [heading = miDir]
             ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)   and xcor = -15]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)   and xcor = -15]
               ifelse any? carrosLado
               [
                 set xcor  -6
@@ -608,7 +537,7 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor < (RadioRot + 10) and color = red and  xcor = -6) [
+    if(ycor < (RadioRot + 12) and color = red and  xcor = -6) [
       set espera 1
     ]
   ]
@@ -616,7 +545,7 @@ to presa
 
 
   ;para que los carros  rojos de heading 270 se cambien de carril
-  ifelse(xcor >= (RadioRot + 10) and xcor < 110  and ycor = 6)[
+  ifelse(xcor >= (RadioRot + 12) and xcor < 110  and ycor = 6)[
     if(color = red)
       [
         if(heading = 270)[
@@ -625,7 +554,7 @@ to presa
             let carrosMismaDir1 other carros with [heading = miDir]
             ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4) and ycor = 15]
+              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6) and ycor = 15]
               ifelse any? carrosLado
               [
                 set ycor  6
@@ -646,7 +575,7 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor < (RadioRot + 10) and color = red and ycor = 6) [
+    if(xcor < (RadioRot + 12) and color = red and ycor = 6) [
       set espera 1
     ]
   ]
@@ -655,7 +584,7 @@ to presa
 
   ;***********************AZULES Y VERDES*******************************
   ;para que los carros azules y verdes de heading 0 se cambien de carril
-  ifelse(ycor > -110 and ycor <= ((RadioRot * -1) - 10)  and xcor = 15)[
+  ifelse(ycor > -110 and ycor <= ((RadioRot * -1) - 12)  and xcor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 0)[
@@ -664,7 +593,7 @@ to presa
             let carrosMismaDir1 other carros with [heading = miDir]
             ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)  and xcor = 6]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)  and xcor = 6]
               ifelse any? carrosLado
               [
                 set xcor 15
@@ -686,14 +615,14 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor > ((RadioRot * -1) - 10) and color != red and xcor = 15) [
+    if(ycor > ((RadioRot * -1) - 12) and color != red and xcor = 15) [
       set espera 1
     ]
   ]
   ;fin de para que los carros azules y verdes de heading 0 se cambien de carril
 
   ;para que los carros azules y verdes de heading 90 se cambien de carril
-  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 10)  and ycor = -15)[
+  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 12)  and ycor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 90)[
@@ -702,7 +631,7 @@ to presa
             let carrosMismaDir1 other carros with [heading = miDir]
             ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -6]
               ifelse any? carrosLado
               [
                 set ycor  -15
@@ -724,14 +653,14 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor > ((RadioRot * -1) - 10) and color != red and ycor = -15) [
+    if(xcor > ((RadioRot * -1) - 12) and color != red and ycor = -15) [
       set espera 1
     ]
   ]
   ;fin de para que los carros azules y verdes de heading 90 se cambien de carril
 
   ;para que los carros azules y verdes de heading 180 se cambien de carril
-  ifelse(ycor >= (RadioRot + 10) and ycor < 110  and xcor = -15)[
+  ifelse(ycor >= (RadioRot + 12) and ycor < 110  and xcor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 180)[
@@ -740,7 +669,7 @@ to presa
             let carrosMismaDir1 other carros with [heading = miDir]
             ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = -6]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = -6]
               ifelse any? carrosLado
               [
                 set xcor  -15
@@ -762,7 +691,7 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor < (RadioRot + 10) and color != red and xcor = -15) [
+    if(ycor < (RadioRot + 12) and color != red and xcor = -15) [
       set espera 1
     ]
   ]
@@ -770,7 +699,7 @@ to presa
 
 
   ;para que los carros azules y verdes de heading 270 se cambien de carril
-  ifelse(xcor >= (RadioRot + 10) and xcor < 110  and ycor = 15)[
+  ifelse(xcor >= (RadioRot + 12) and xcor < 110  and ycor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 270)[
@@ -779,7 +708,7 @@ to presa
             let carrosMismaDir1 other carros with [heading = miDir]
             ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)  and ycor = 6]
+              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)  and ycor = 6]
               ifelse any? carrosLado
               [
                 set ycor  15
@@ -800,7 +729,7 @@ to presa
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor < (RadioRot + 10) and color != red and ycor = 15) [
+    if(xcor < (RadioRot + 12) and color != red and ycor = 15) [
       set espera 1
     ]
   ]
@@ -820,7 +749,7 @@ to final
 
   ;***********************ROJOS*******************************
   ;para que los carros  rojos de heading 0 se cambien de carril
-  ifelse(ycor > ((RadioRot * -1) - 40) and ycor <= ((RadioRot * -1) - 10)  and xcor = 6)[
+  ifelse(ycor > ((RadioRot * -1) - 40) and ycor <= ((RadioRot * -1) - 12)  and xcor = 6)[
     if(color = red)
       [
         if(heading = 0)[
@@ -830,7 +759,7 @@ to final
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = 15]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = 15]
               ifelse any? carrosLado
               [
                 set xcor 6
@@ -851,14 +780,14 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor > ((RadioRot * -1) - 10) and color = red and xcor = 6) [
+    if(ycor > ((RadioRot * -1) - 12) and color = red and xcor = 6) [
       set espera 1
     ]
   ]
   ;fin de para que los carros  rojos de heading 0 se cambien de carril
 
   ;para que los carros  rojos de heading 90 se cambien de carril
-  ifelse(xcor > ((RadioRot * -1) - 40) and xcor <= ((RadioRot * -1) - 10)  and ycor = -6)[
+  ifelse(xcor > ((RadioRot * -1) - 40) and xcor <= ((RadioRot * -1) - 12)  and ycor = -6)[
     if(color = red)
       [
         if(heading = 90)[
@@ -867,7 +796,7 @@ to final
           ifelse any? carrosMismaDir1
           [
 
-            let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+            let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -15]
             ifelse any? carrosLado
             [
               set ycor  -6
@@ -889,7 +818,7 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor > ((RadioRot * -1) - 10) and color = red and ycor = -6) [
+    if(xcor > ((RadioRot * -1) - 12) and color = red and ycor = -6) [
       set espera 1
     ]
   ]
@@ -897,7 +826,7 @@ to final
 
 
   ;para que los carros  rojos de heading 180 se cambien de carril
-  ifelse(ycor >= (RadioRot + 10) and ycor < (RadioRot + 40)  and xcor = -6)[
+  ifelse(ycor >= (RadioRot + 12) and ycor < (RadioRot + 40)  and xcor = -6)[
     if(color = red)
       [
         if(heading = 180)[
@@ -905,7 +834,7 @@ to final
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)   and xcor = -15]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)   and xcor = -15]
               ifelse any? carrosLado
               [
                 set xcor  -6
@@ -926,14 +855,14 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor < (RadioRot + 10) and color = red and  xcor = -6) [
+    if(ycor < (RadioRot + 12) and color = red and  xcor = -6) [
       set espera 1
     ]
   ]
   ;fin de para que los carros  rojos de heading 180 se cambien de carril
 
   ;para que los carros  rojos de heading 270 se cambien de carril
-  ifelse(xcor >= (RadioRot + 10)  and xcor < (RadioRot + 40)  and ycor = 6)[
+  ifelse(xcor >= (RadioRot + 12)  and xcor < (RadioRot + 40)  and ycor = 6)[
     if(color = red)
       [
         if(heading = 270)[
@@ -941,7 +870,7 @@ to final
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
           [
-            let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4) and ycor = 15]
+            let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6) and ycor = 15]
             ifelse any? carrosLado
             [
               set ycor  6
@@ -961,7 +890,7 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor < (RadioRot + 10) and color = red and ycor = 6) [
+    if(xcor < (RadioRot + 12) and color = red and ycor = 6) [
       set espera 1
     ]
   ]
@@ -969,7 +898,7 @@ to final
 
   ;***********************AZULES Y VERDES*******************************
   ;para que los carros azules y verdes de heading 0 se cambien de carril
-  ifelse(ycor > ((RadioRot * -1) - 40) and ycor <= ((RadioRot * -1) - 10)  and xcor = 15)[
+  ifelse(ycor > ((RadioRot * -1) - 40) and ycor <= ((RadioRot * -1) - 12)  and xcor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 0)[
@@ -977,7 +906,7 @@ to final
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)  and xcor = 6]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)  and xcor = 6]
               ifelse any? carrosLado
               [
                 set xcor 15
@@ -998,14 +927,14 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor > ((RadioRot * -1) - 10) and color != red and xcor = 15) [
+    if(ycor > ((RadioRot * -1) - 12) and color != red and xcor = 15) [
       set espera 1
     ]
   ]
   ;fin de para que los carros azules y verdes de heading 0 se cambien de carril
 
   ;para que los carros azules y verdes de heading 90 se cambien de carril
-  ifelse(xcor > ((RadioRot * -1) - 40) and xcor <= ((RadioRot * -1) - 10)   and ycor = -15)[
+  ifelse(xcor > ((RadioRot * -1) - 40) and xcor <= ((RadioRot * -1) - 12)   and ycor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 90)[
@@ -1013,7 +942,7 @@ to final
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -6]
               ifelse any? carrosLado
               [
                 set ycor  -15
@@ -1034,14 +963,14 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor > ((RadioRot * -1) - 10) and color != red and ycor = -15) [
+    if(xcor > ((RadioRot * -1) - 12) and color != red and ycor = -15) [
       set espera 1
     ]
   ]
   ;fin de para que los carros azules y verdes de heading 90 se cambien de carril
 
   ;para que los carros azules y verdes de heading 180 se cambien de carril
-  ifelse(ycor >= (RadioRot + 10) and ycor < (RadioRot + 40)  and xcor = -15)[
+  ifelse(ycor >= (RadioRot + 12) and ycor < (RadioRot + 40)  and xcor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 180)[
@@ -1049,7 +978,7 @@ to final
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = -6]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = -6]
               ifelse any? carrosLado
               [
                 set xcor  -15
@@ -1070,7 +999,7 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor < (RadioRot + 10) and color != red and xcor = -15) [
+    if(ycor < (RadioRot + 12) and color != red and xcor = -15) [
       set espera 1
     ]
   ]
@@ -1078,7 +1007,7 @@ to final
 
 
   ;para que los carros azules y verdes de heading 270 se cambien de carril
-  ifelse(xcor >= (RadioRot + 10)  and xcor < (RadioRot + 40)  and ycor = 15)[
+  ifelse(xcor >= (RadioRot + 12)  and xcor < (RadioRot + 40)  and ycor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 270)[
@@ -1086,7 +1015,7 @@ to final
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)  and ycor = 6]
+              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)  and ycor = 6]
               ifelse any? carrosLado
               [
                 set ycor  15
@@ -1106,7 +1035,7 @@ to final
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor < (RadioRot + 10) and color != red and ycor = 15) [
+    if(xcor < (RadioRot + 12) and color != red and ycor = 15) [
       set espera 1
     ]
   ]
@@ -1126,7 +1055,7 @@ to cambio
 
   ;***********************ROJOS*******************************
   ;para que los carros  rojos de heading 0 se cambien de carril
-  ifelse(ycor > -115 and ycor <= ((RadioRot * -1) - 10)  and xcor = 6)[
+  ifelse(ycor > -115 and ycor <= ((RadioRot * -1) - 12)  and xcor = 6)[
     if(color = red)
       [
         if(heading = 0)[
@@ -1134,7 +1063,7 @@ to cambio
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = 15]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = 15]
               ifelse any? carrosLado
               [
                 set xcor 6
@@ -1155,14 +1084,14 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor > ((RadioRot * -1) - 10) and color = red and xcor = 6) [
+    if(ycor > ((RadioRot * -1) - 12) and color = red and xcor = 6) [
       set espera 1
     ]
   ]
   ;fin de para que los carros  rojos de heading 0 se cambien de carril
 
   ;para que los carros  rojos de heading 90 se cambien de carril
-  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 10)  and ycor = -6)[
+  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 12)  and ycor = -6)[
     if(color = red)
       [
         if(heading = 90)[
@@ -1171,7 +1100,7 @@ to cambio
           ifelse any? carrosMismaDir1
           [
 
-            let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+            let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -15]
             ifelse any? carrosLado
             [
               set ycor  -6
@@ -1193,14 +1122,14 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor > ((RadioRot * -1) - 10) and color = red and ycor = -6) [
+    if(xcor > ((RadioRot * -1) - 12) and color = red and ycor = -6) [
       set espera 1
     ]
   ]
   ;fin de para que los carros  rojos de heading 90 se cambien de carril
 
   ;para que los carros  rojos de heading 180 se cambien de carril
-  ifelse(ycor >= (RadioRot + 10) and ycor < 110  and xcor = -6)[
+  ifelse(ycor >= (RadioRot + 12) and ycor < 110  and xcor = -6)[
     if(color = red)
       [
         if(heading = 180)[
@@ -1208,7 +1137,7 @@ to cambio
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)   and xcor = -15]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)   and xcor = -15]
               ifelse any? carrosLado
               [
                 set xcor  -6
@@ -1229,14 +1158,14 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor < (RadioRot + 10) and color = red and  xcor = -6) [
+    if(ycor < (RadioRot + 12) and color = red and  xcor = -6) [
       set espera 1
     ]
   ]
   ;fin de para que los carros  rojos de heading 180 se cambien de carril
 
   ;para que los carros  rojos de heading 270 se cambien de carril
-  ifelse(xcor >= (RadioRot + 10) and xcor < 110  and ycor = 6)[
+  ifelse(xcor >= (RadioRot + 12) and xcor < 110  and ycor = 6)[
     if(color = red)
       [
         if(heading = 270)[
@@ -1244,7 +1173,7 @@ to cambio
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
           [
-            let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4) and ycor = 15]
+            let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6) and ycor = 15]
             ifelse any? carrosLado
             [
               set ycor  6
@@ -1264,7 +1193,7 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor < (RadioRot + 10) and color = red and ycor = 6) [
+    if(xcor < (RadioRot + 12) and color = red and ycor = 6) [
       set espera 1
     ]
   ]
@@ -1272,7 +1201,7 @@ to cambio
 
   ;***********************AZULES Y VERDES*******************************
   ;para que los carros azules y verdes de heading 0 se cambien de carril
-  ifelse(ycor > -115 and ycor <= ((RadioRot * -1) - 10)  and xcor = 15)[
+  ifelse(ycor > -115 and ycor <= ((RadioRot * -1) - 12)  and xcor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 0)[
@@ -1280,7 +1209,7 @@ to cambio
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)  and xcor = 6]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)  and xcor = 6]
               ifelse any? carrosLado
               [
                 set xcor 15
@@ -1301,14 +1230,14 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor > ((RadioRot * -1) - 10) and color != red and xcor = 15) [
+    if(ycor > ((RadioRot * -1) - 12) and color != red and xcor = 15) [
       set espera 1
     ]
   ]
   ;fin de para que los carros azules y verdes de heading 0 se cambien de carril
 
   ;para que los carros azules y verdes de heading 90 se cambien de carril
-  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 10)  and ycor = -15)[
+  ifelse(xcor > -110 and xcor <= ((RadioRot * -1) - 12)  and ycor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 90)[
@@ -1316,7 +1245,7 @@ to cambio
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+              let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -6]
               ifelse any? carrosLado
               [
                 set ycor  -15
@@ -1337,14 +1266,14 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor > ((RadioRot * -1) - 10) and color != red and ycor = -15) [
+    if(xcor > ((RadioRot * -1) - 12) and color != red and ycor = -15) [
       set espera 1
     ]
   ]
   ;fin de para que los carros azules y verdes de heading 90 se cambien de carril
 
   ;para que los carros azules y verdes de heading 180 se cambien de carril
-  ifelse(ycor >= (RadioRot + 10) and ycor < 110  and xcor = -15)[
+  ifelse(ycor >= (RadioRot + 12) and ycor < 110  and xcor = -15)[
     if(color = sky or color = green)
       [
         if(heading = 180)[
@@ -1352,7 +1281,7 @@ to cambio
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = -6]
+              let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = -6]
               ifelse any? carrosLado
               [
                 set xcor  -15
@@ -1373,7 +1302,7 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(ycor < (RadioRot + 10) and color != red and xcor = -15) [
+    if(ycor < (RadioRot + 12) and color != red and xcor = -15) [
       set espera 1
     ]
   ]
@@ -1381,7 +1310,7 @@ to cambio
 
 
   ;para que los carros azules y verdes de heading 270 se cambien de carril
-  ifelse(xcor >= (RadioRot + 10) and xcor < 110  and ycor = 15)[
+  ifelse(xcor >= (RadioRot + 12) and xcor < 110  and ycor = 15)[
     if(color = sky or color = green)
       [
         if(heading = 270)[
@@ -1389,7 +1318,7 @@ to cambio
           let carrosMismaDir1 other carros with [heading = miDir]
           ifelse any? carrosMismaDir1
             [
-              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)  and ycor = 6]
+              let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)  and ycor = 6]
               ifelse any? carrosLado
               [
                 set ycor  15
@@ -1409,7 +1338,7 @@ to cambio
   ]
   ;caso en que se debe detener para hacer el cambio
   [
-    if(xcor < (RadioRot + 10) and color != red and ycor = 15) [
+    if(xcor < (RadioRot + 12) and color != red and ycor = 15) [
       set espera 1
     ]
   ]
@@ -1433,13 +1362,11 @@ to cambioEspera
   if(xcor = 6 and color = red)[
     if(heading = 0)[
       ;set color pink
-
-
       ;revisa que no haya un carro al lado para que se pueda cambiar de carril
       let carrosMismaDir1 other carros with [heading = miDir]
       ifelse any? carrosMismaDir1
         [
-          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = 15]
+          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = 15]
           ifelse any? carrosLado
             [
               set xcor 6
@@ -1469,7 +1396,7 @@ to cambioEspera
       ifelse any? carrosMismaDir1
         [
 
-          let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+          let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -15]
           ifelse any? carrosLado
             [
               set ycor  -6
@@ -1500,7 +1427,7 @@ to cambioEspera
       let carrosMismaDir1 other carros with [heading = miDir]
       ifelse any? carrosMismaDir1
         [
-          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)   and xcor = -15]
+          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)   and xcor = -15]
           ifelse any? carrosLado
             [
               set xcor  -6
@@ -1531,7 +1458,7 @@ to cambioEspera
       let carrosMismaDir1 other carros with [heading = miDir]
       ifelse any? carrosMismaDir1
         [
-          let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4) and ycor = 15]
+          let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6) and ycor = 15]
           ifelse any? carrosLado
             [
               set ycor  6
@@ -1562,7 +1489,7 @@ to cambioEspera
       let carrosMismaDir1 other carros with [heading = miDir]
       ifelse any? carrosMismaDir1
         [
-          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)  and xcor = 6]
+          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)  and xcor = 6]
           ifelse any? carrosLado
             [
               set xcor 15
@@ -1592,7 +1519,7 @@ to cambioEspera
       let carrosMismaDir1 other carros with [heading = miDir]
       ifelse any? carrosMismaDir1
         [
-          let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)   and ycor = -15]
+          let carrosLado other carrosMismaDir1 with [((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)   and ycor = -6]
           ifelse any? carrosLado
             [
               set ycor  -15
@@ -1622,7 +1549,7 @@ to cambioEspera
       let carrosMismaDir1 other carros with [heading = miDir]
       ifelse any? carrosMismaDir1
         [
-          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 4 and (([ycor] of myself) - ycor) > -4)    and xcor = -6]
+          let carrosLado other carrosMismaDir1 with [ ((([ycor] of myself) - ycor) < 6 and (([ycor] of myself) - ycor) > -6)    and xcor = -6]
           ifelse any? carrosLado
             [
               set xcor  -15
@@ -1653,7 +1580,7 @@ to cambioEspera
       let carrosMismaDir1 other carros with [heading = miDir]
       ifelse any? carrosMismaDir1
         [
-          let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 4 and (([xcor] of myself) - xcor) > -4)  and ycor = 6]
+          let carrosLado other carrosMismaDir1 with [ ((([xcor] of myself) - xcor) < 6 and (([xcor] of myself) - xcor) > -6)  and ycor = 6]
           ifelse any? carrosLado
             [
               set ycor  15
@@ -1783,18 +1710,18 @@ SLIDER
 NumCarros
 NumCarros
 1
-100
-68
+80
+80
 1
 1
 NIL
 VERTICAL
 
 PLOT
-10
-255
-210
-405
+15
+317
+215
+467
 Velocidad
 NIL
 km/h
@@ -1809,10 +1736,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot [velocidad] of CarroEnf * 360"
 
 MONITOR
-125
-420
-186
-465
+9
+477
+70
+522
 Direccion
 [heading] of CarroEnf
 2
@@ -1820,10 +1747,10 @@ Direccion
 11
 
 MONITOR
-37
-422
-109
-467
+759
+27
+831
+72
 carros/min
 CarrosTransitados / ticks * 6000
 0
@@ -1831,10 +1758,10 @@ CarrosTransitados / ticks * 6000
 11
 
 MONITOR
-52
-477
-173
-522
+846
+27
+967
+72
 Tránsito de Carros
 CarrosTransitados
 17
@@ -1861,7 +1788,7 @@ NIL
 SLIDER
 18
 167
-210
+212
 200
 Aceleracion
 Aceleracion
@@ -1870,7 +1797,7 @@ Aceleracion
 5.0E-4
 0.0001
 1
-NIL
+x10⁴m/s²
 HORIZONTAL
 
 SLIDER
@@ -1885,7 +1812,7 @@ SeparacionMin
 8
 1
 1
-NIL
+m
 HORIZONTAL
 
 MONITOR
@@ -1900,10 +1827,10 @@ Promedio total
 11
 
 PLOT
-762
-204
-954
-338
+763
+202
+960
+336
 Promedio total
 NIL
 km/h
@@ -1918,9 +1845,9 @@ PENS
 "Promedio" 1.0 0 -7500403 true "" "plot (((sum [velocidad] of turtles) / (count turtles)) * 100) * 3.6"
 
 PLOT
-983
-209
-1160
+978
+203
+1175
 335
 Promedio rojos
 NIL
@@ -1936,10 +1863,10 @@ PENS
 "Promedio" 1.0 0 -16777216 true "" "plot (((sum [velocidad] of turtles with [color = red]) / (count turtles with [color = red])) * 100) * 3.6"
 
 MONITOR
-977
-151
-1177
-196
+978
+153
+1176
+198
 Promedio rojos
 (((sum [velocidad] of turtles with [color = red]) / (count turtles with [color = red])) * 100) * 3.6
 17
@@ -1949,7 +1876,7 @@ Promedio rojos
 MONITOR
 763
 345
-962
+961
 390
 Promedio verdes
 (((sum [velocidad] of turtles with [color = green]) / (count turtles with [color = green])) * 100) * 3.6
@@ -1958,10 +1885,10 @@ Promedio verdes
 11
 
 PLOT
-766
-396
-962
-516
+763
+397
+961
+528
 Promedio verdes
 NIL
 km/h
@@ -1976,10 +1903,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot (((sum [velocidad] of turtles with [color = green]) / (count turtles with [color = green])) * 100) * 3.6"
 
 MONITOR
-982
-342
-1176
-387
+978
+345
+1175
+390
 Promedio azules
 (((sum [velocidad] of turtles with [color = sky]) / (count turtles with [color = sky])) * 100) * 3.6
 17
@@ -1987,10 +1914,10 @@ Promedio azules
 11
 
 PLOT
-983
-395
-1172
-526
+979
+398
+1174
+529
 Promedio azules
 NIL
 km/h
@@ -2015,21 +1942,21 @@ Promedios de Velocidad:
 1
 
 CHOOSER
-749
-10
-980
-55
+18
+258
+212
+303
 Regla
 Regla
 "Cambia cuando hay mucha presa" "Cambia cuando llega al final" "Cambia apenas pueda"
 0
 
 BUTTON
-1046
-18
-1189
-51
-Watch CarroEnf
+81
+482
+224
+515
+Enfatizar Carro
 watch CarroEnf
 NIL
 1
